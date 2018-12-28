@@ -4,7 +4,7 @@
 Tlv493d Tlv493dMagnetic3DSensor = Tlv493d();
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   while(!Serial);
   Tlv493dMagnetic3DSensor.begin();
   Tlv493dMagnetic3DSensor.setAccessMode(Tlv493dMagnetic3DSensor.MASTERCONTROLLEDMODE);
@@ -18,15 +18,15 @@ void loop() {
   double mag = Tlv493dMagnetic3DSensor.getAmount();
   double azimuth = Tlv493dMagnetic3DSensor.getAzimuth();
   double polar = Tlv493dMagnetic3DSensor.getPolar();
+  String message = "";
 
-  if(mag > 100){
-    Serial.print("Pressed ");
+  if(mag > 55){
+    message += "Pressed";
   } else {
-    Serial.print("Not Pressed ");
-  }
-
-  Serial.print("Angle: ");
+    message += "Not pressed ";
+  } 
+  message += "Angle: ";
+  Serial.print(message);
+  
   Serial.println(azimuth);
-
-  delay(10);
 }
