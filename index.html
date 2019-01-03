@@ -1,0 +1,83 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Socket.io Simple Example</title>
+    <!-- Materialize CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  </head>
+  <body>
+    <nav>
+      <div class="nav-wrapper">
+        <a class="brand-logo">SuperjunctiON</a>
+      </div>
+    </nav>
+
+    <div class="row">
+      <div class="switch col s4">
+        <h4> Outlet1 </h4>
+        <label>
+          Off
+          <input type="checkbox" id="o1">
+          <span class="lever"></span>
+          On
+        </label>
+      </div>
+      <div class="switch col s4">
+        <h4> Outlet2 </h4>
+        <label>
+          Off
+          <input type="checkbox" id="o2">
+          <span class="lever"></span>
+          On
+        </label>
+      </div>
+      <div class="switch col s4">
+        <h4> Mode </h4>
+        <label>
+          Off
+          <input type="checkbox" id="mode">
+          <span class="lever"></span>
+          On
+        </label>
+      </div>
+    </div>
+
+    <!-- SocketIO -->
+    <script src="/socket.io/socket.io.js"></script>
+    <!-- JQuery -->
+    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+    <!-- Materialize JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script>
+       var socket = io();
+       $('#o1').on('click', function() {
+         if  (this.checked) socket.emit('output1', {state:true});
+         else socket.emit('output1', {state:false});
+       });
+       $('#o2').on('click', function() {
+         if  (this.checked) socket.emit('output2', {state:true});
+         else socket.emit('output2', {state:false});
+       });
+       $('#mode').on('click', function() {
+         socket.emit('mode', {state:true});
+         if  (this.checked) socket.emit('mode', {state:true});
+         else socket.emit('mode', {state:false});
+       });
+       socket.on('output1', function(object) {
+         console.log("Output1: " + object.state);
+         if  (object.state) $('#o1').prop('checked', true);
+         else  $('#o1').prop('checked', false);
+       });
+       socket.on('output2', function(object) {
+         console.log("Output2: " + object.state);
+         if  (object.state) $('#o2').prop('checked', true);
+         else  $('#o2').prop('checked', false);
+       });
+       socket.on('mode', function(object) {
+         console.log("Mode: " + object.state);
+         if  (object.state) $('#mode').prop('checked', true);
+         else  $('#mode').prop('checked', false);
+       });
+    </script>
+  </body>
+</html>
