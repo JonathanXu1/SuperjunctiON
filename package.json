@@ -8,6 +8,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
+    "test": "node test.js"
   },
   "dependencies": {
     "express": "^4.14.0",
@@ -16,6 +17,10 @@
   "devDependencies": {
     "request": "^2.81.0",
     "tape": "^4.7.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/heroku/node-js-getting-started"
   },
   "keywords": [
     "node",
