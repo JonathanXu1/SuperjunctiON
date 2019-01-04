@@ -38,6 +38,7 @@ data["mode"] = "auto";
 
 void setData(String data) {
   Serial.println("Data " + data);
+  /*
   data = data.substring(11);
   s1 = data.substring(0, 4).equals("true");
   if (s1) s1S = "true";
@@ -49,6 +50,7 @@ void setData(String data) {
   data = data.substring(9);
   powerMode = data.substring(0, data.indexOf("'"));
   Serial.println("Update: " + s1S + " " + s2S + " " + powerMode);
+  */
 }
 
 void setup() {
