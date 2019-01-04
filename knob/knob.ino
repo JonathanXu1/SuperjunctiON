@@ -125,8 +125,8 @@ void loop() {
       Serial.println(" outlet");
       powerMode = "outlet";
     }
-    String message = socket.emit("updateData", "{\"output1\": "+ s1S +", \"output2\": "+ s2S +", \"mode\": '"+ powerMode +"'}");
-    socket.emit(message);
+    String message = "{\"output1\": "+ s1S +", \"output2\": "+ s2S +", \"mode\": '"+ powerMode +"'}";
+    socket.emit("updateData", message);
     Serial.println(message);
     skip = true;
     delay(300);
