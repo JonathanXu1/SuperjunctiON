@@ -1,9 +1,11 @@
 /*Be sure to install these libraries:
  * https://github.com/robojay/Socket.io-v1.x-Library
  * https://github.com/Infineon/TLV493D-A1B6-3DMagnetic-Sensor
+ * https://github.com/bblanchon/ArduinoJson
 */
 
 #include <SocketIOClient.h>
+#include <ArduinoJson.h>
 #include <SPI.h>
 #include <Tlv493d.h>
 #include <Wire.h>
@@ -16,25 +18,23 @@ int inverterRelay = D8; //Low for connected to battery
 int outletSensor = A0;
 int outletLed = D4;
 
-// Switch statuses
-
-boolean s1 = false; //False for normally open
-boolean s2 = false;
-String s1S = "false";
-String s2S = "false";
-String powerMode = "auto";
-boolean skip = false;
-
-// Network login
+// Networking variables
 const char* ssid = "MJMH";
 const char* password = "4166892113";
 String host = "192.168.0.16";
 int port = 5000;
-
+StaticJsonBuffer<200> jsonBuffer;
 SocketIOClient socket;
 
 // Tlv493d Opject
 Tlv493d Tlv493dMagnetic3DSensor = Tlv493d();
+
+// Switch statuses
+boolean skip = false;
+JsonObject& data = jsonBuffer.createObject();
+data["output1"] = true;
+data["output2"] = true;
+data["mode"] = "auto";
 
 void setData(String data) {
   Serial.println("Data " + data);
@@ -77,19 +77,22 @@ void setup() {
 
   //Set up wifi
   WiFi.begin(ssid, password);
-  uint8_t i = 0;
-  Serial.print("Connecting to wifi");
-  while (WiFi.status() != WL_CONNECTED && i++ < 20){
-    Serial.print(".");
+  while (WiFi.status() != WL_CONNECTED) {
     delay(500);
+    Serial.print(".");
   }
-  if(i == 21){
-    Serial.println("Connecton failed");
+
+  Serial.println("");
+  Serial.println("WiFi connected");  
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  if (!client.connect(host, port)) {
+    Serial.println("connection failed");
+    return;
   }
-  Serial.println("wifi connected");
-  socket.on("updateData", setData);
-  socket.connect(host, port);
-  Serial.println("server connected");
+  
+  if (client.connected()) client.send("connection", "message", "Connected !!!!");
 }
 
 void loop() {
@@ -105,29 +108,24 @@ void loop() {
     Serial.print("Pressed: ");
      if(azimuth < 20){ //Socket2
       Serial.println(" socket2");
-      s2 = !s2;
-      if (s2S.equals("true")) s2S = "false";
-      else s2S = "true";
-      digitalWrite(output2, s2);
+      data["output2"] = !data["output2"];
+      digitalWrite(output2, !data["output2"]);
     } else if(azimuth <40){ //Socket1
       Serial.println(" socket1");
-      s1 = !s1;
-      if (s1S.equals("true")) s1S = "false";
-      else s1S = "true";
-      digitalWrite(output1, s1);
+      data["output1"] = !data["output1"];
+      digitalWrite(output1, !data["output1"]);
     } else if(azimuth < 60){ //battery
       Serial.println(" battery");
-      powerMode = "battery";
+      data["mode"] = "battery";
     } else if(azimuth < 80){ //Auto
       Serial.println(" auto");
-      powerMode = "auto";
+      data["mode"] = "auto";
     } else { //Outlet
       Serial.println(" outlet");
-      powerMode = "outlet";
+      data["mode"] = "outlet";
     }
-    String message = "{\"output1\": "+ s1S +", \"output2\": "+ s2S +", \"mode\": '"+ powerMode +"'}";
-    socket.emit("updateData", message);
-    Serial.println(message);
+    socket.emit("updateData", data);
+    Serial.println(data);
     skip = true;
     delay(300);
   } else { //Not pressed
@@ -135,17 +133,17 @@ void loop() {
     Serial.println("Not pressed");
   }
 
-  if (powerMode.equals("auto")){
+  if (data["mode"].equals("auto")){
     int voltage = analogRead(outletSensor);
-    if (voltage > 1000) powerMode = "outlet";
-    else powerMode = "battery";
+    if (voltage > 1000) data["mode"] = "outlet";
+    else data["mode"] = "battery";
   }
-  if (powerMode.equals("battery")){
+  if (data["mode"].equals("battery")){
     digitalWrite(sourceRelay, LOW);
     delay(100);
     digitalWrite(inverterRelay, LOW);
     digitalWrite(outletLed, LOW);
-  } else if (powerMode.equals("outlet")){
+  } else if (data["mode"].equals("outlet")){
     digitalWrite(inverterRelay, HIGH);
     delay(100);
     digitalWrite(sourceRelay, HIGH);
