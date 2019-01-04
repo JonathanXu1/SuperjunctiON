@@ -88,6 +88,10 @@
          $("#" + data.mode).prop('checked', true);
        });
 
+       socket.on('ipAddress', function(object){
+         console.log("Ip: ", object.ip);
+       });
+
     </script>
   </body>
 </html>

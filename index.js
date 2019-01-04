@@ -8,6 +8,8 @@ var data = { output1: true, output2: true, mode: 'auto' };
 var proxy = url.parse(process.env.QUOTAGUARDSTATIC_URL);
 var target  = url.parse("https://superjunction.herokuapp.com/");
 
+var cust;
+
 var options = {
   hostname: proxy.hostname,
   port: proxy.port || 5000,
@@ -21,6 +23,7 @@ var options = {
 http1.get(options, function(res) {
   res.pipe(process.stdout);
   return console.log("status code", res.statusCode);
+  cust = res.statusCode;
 });
 
 app.get('/', function(req, res) {
@@ -41,6 +44,7 @@ io.on('connection', function(socket) {
   });
   socket.on("getData", function(){
     io.sockets.emit('updateData', data);
+    io.sockets.emit('ipAddress', {ip:cust});
   });
 });
 

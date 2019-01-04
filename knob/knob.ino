@@ -26,10 +26,10 @@ String powerMode = "auto";
 boolean skip = false;
 
 // Network login
-const char* ssid = //"ssid";
-const char* password = //"password";
-String host = //"host ip";
-int port = //port#;
+const char* ssid = "MJMH";
+const char* password = "4166892113";
+String host = "192.168.0.16";
+int port = 5000;
 
 SocketIOClient socket;
 
@@ -125,8 +125,9 @@ void loop() {
       Serial.println(" outlet");
       powerMode = "outlet";
     }
-    socket.emit("updateData", "{\"output1\": "+ !s1S +", \"output2\": "+ !s2S +", \"mode\": "+ powerMode +"}");
-    "{\"state\":true}"
+    String message = socket.emit("updateData", "{\"output1\": "+ s1S +", \"output2\": "+ s2S +", \"mode\": '"+ powerMode +"'}");
+    socket.emit(message);
+    Serial.println(message);
     skip = true;
     delay(300);
   } else { //Not pressed
