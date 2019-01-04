@@ -24,10 +24,10 @@ String powerMode = "auto";
 boolean skip = false;
 
 // Network login
-const char* ssid = //"ssid";
-const char* password = //"password";
-String host = //"host ip";
-int port = //port#;
+const char* ssid = "MJMH";
+const char* password = "4166892113";
+String host = "192.168.0.19";
+int port = 5000;
 
 SocketIOClient socket;
 
