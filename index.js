@@ -1,17 +1,11 @@
 var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
-const request = require('request');
-const fixieRequest = request.defaults({'proxy': process.env.FIXIE_URL});
 var data = { output1: true, output2: true, mode: 'auto' };
 
 app.get('/', function(req, res) {
   res.sendFile(__dirname + '/index.html');
 });
-
-// fixieRequest('http://superjunction.herokuapp.com/', (err, res, body) => {
-//   console.log(`Got response: ${res.statusCode}`);
-// });
 
 io.on('connection', function(socket) {
   console.log('User connected: ' + socket.id);
