@@ -38,11 +38,15 @@ void setData(String data) {
   Serial.println("Data " + data);
   data = data.substring(11);
   s1 = data.substring(0, 4).equals("true");
+  if (s1) String s1S = "true";
+  else String s1S = "false";
   data = data.substring(11);
   s2 = data.substring(0, 4).equals("true");
+  if (s2) String s2S = "true";
+  else String s2S = "false";
   data = data.substring(9);
   powerMode = data.substring(0, data.indexOf("'"));
-  Serial.println("Update: " + s1 + " " + s2 + " " + powerMode);
+  Serial.println("Update: " + s1S + " " + s2S + " " + powerMode);
 }
 
 void setup() {
