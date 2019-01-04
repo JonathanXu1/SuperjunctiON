@@ -1,7 +1,7 @@
 /*Be sure to install these libraries:
  * https://github.com/robojay/Socket.io-v1.x-Library
  * https://github.com/Infineon/TLV493D-A1B6-3DMagnetic-Sensor
- * https://github.com/bblanchon/ArduinoJson
+ * https://github.com/bblanchon/ArduinoJson  <-- Select version 5
 */
 
 #include <SocketIOClient.h>
@@ -19,11 +19,12 @@ int outletSensor = A0;
 int outletLed = D4;
 
 // Networking variables
-const char* ssid = "MJMH";
-const char* password = "4166892113";
-String host = "192.168.0.16";
+const char* ssid = "newhome";
+const char* password = "maolan123";
+String host = "192.168.137.1";
 int port = 5000;
-StaticJsonBuffer<200> jsonBuffer;
+DynamicJsonBuffer jsonBuffer(JSON_OBJECT_SIZE(3));
+String JSON;
 SocketIOClient socket;
 
 // Tlv493d Opject
@@ -32,9 +33,6 @@ Tlv493d Tlv493dMagnetic3DSensor = Tlv493d();
 // Switch statuses
 boolean skip = false;
 JsonObject& data = jsonBuffer.createObject();
-data["output1"] = true;
-data["output2"] = true;
-data["mode"] = "auto";
 
 void setData(String data) {
   Serial.println("Data " + data);
@@ -75,7 +73,11 @@ void setup() {
   digitalWrite(output2, LOW);
   digitalWrite(sourceRelay, HIGH);
   digitalWrite(inverterRelay, HIGH);
-  digitalWrite(outletLed, HIGH);
+  digitalWrite(outletLed, HIGH);\
+
+  data["output1"] = true;
+  data["output2"] = true;
+  data["mode"] = "auto";
 
   //Set up wifi
   WiFi.begin(ssid, password);
@@ -89,12 +91,8 @@ void setup() {
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
 
-  if (!client.connect(host, port)) {
-    Serial.println("connection failed");
-    return;
-  }
-  
-  if (client.connected()) client.send("connection", "message", "Connected !!!!");
+  socket.on("updateData", setData);
+  socket.connect(host, port);  
 }
 
 void loop() {
@@ -126,8 +124,9 @@ void loop() {
       Serial.println(" outlet");
       data["mode"] = "outlet";
     }
-    socket.emit("updateData", data);
-    Serial.println(data);
+    data.printTo(JSON);
+    socket.emit("updateData", JSON);
+    data.printTo(Serial);
     skip = true;
     delay(300);
   } else { //Not pressed
@@ -135,17 +134,20 @@ void loop() {
     Serial.println("Not pressed");
   }
 
-  if (data["mode"].equals("auto")){
+  String modeStr((char*)data["mode"]);
+  
+  if (modeStr == "auto"){
     int voltage = analogRead(outletSensor);
     if (voltage > 1000) data["mode"] = "outlet";
     else data["mode"] = "battery";
+    String modeStr((char*)data["mode"]);
   }
-  if (data["mode"].equals("battery")){
+  if (modeStr == "battery"){
     digitalWrite(sourceRelay, LOW);
     delay(100);
     digitalWrite(inverterRelay, LOW);
     digitalWrite(outletLed, LOW);
-  } else if (data["mode"].equals("outlet")){
+  } else if (modeStr == "outlet"){
     digitalWrite(inverterRelay, HIGH);
     delay(100);
     digitalWrite(sourceRelay, HIGH);
