@@ -20,6 +20,8 @@ int outletLed = D4;
 
 boolean s1 = false; //False for normally open
 boolean s2 = false;
+String s1S = "false";
+String s2S = "false";
 String powerMode = "auto";
 boolean skip = false;
 
@@ -35,7 +37,6 @@ SocketIOClient socket;
 Tlv493d Tlv493dMagnetic3DSensor = Tlv493d();
 
 void setData(String data) {
-  String s1S, s2S;
   Serial.println("Data " + data);
   data = data.substring(11);
   s1 = data.substring(0, 4).equals("true");
@@ -105,10 +106,14 @@ void loop() {
      if(azimuth < 20){ //Socket2
       Serial.println(" socket2");
       s2 = !s2;
+      if (s2S.equals("true")) s2S = "false";
+      else s2S = "true";
       digitalWrite(output2, s2);
     } else if(azimuth <40){ //Socket1
       Serial.println(" socket1");
       s1 = !s1;
+      if (s1S.equals("true")) s1S = "false";
+      else s1S = "true";
       digitalWrite(output1, s1);
     } else if(azimuth < 60){ //battery
       Serial.println(" battery");
@@ -120,7 +125,7 @@ void loop() {
       Serial.println(" outlet");
       powerMode = "outlet";
     }
-    socket.emit("updateData", "{output1: "+ !s1 +", output2: "+ !s2 +", mode: "+ powerMode +"}");
+    socket.emit("updateData", "{output1: "+ !s1S +", output2: "+ !s2S +", mode: "+ powerMode +"}");
     skip = true;
     delay(300);
   } else { //Not pressed
