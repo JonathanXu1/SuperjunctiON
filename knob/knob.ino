@@ -125,7 +125,8 @@ void loop() {
       Serial.println(" outlet");
       powerMode = "outlet";
     }
-    socket.emit("updateData", "{output1: "+ !s1S +", output2: "+ !s2S +", mode: "+ powerMode +"}");
+    socket.emit("updateData", "{\"output1\": "+ !s1S +", \"output2\": "+ !s2S +", \"mode\": "+ powerMode +"}");
+    "{\"state\":true}"
     skip = true;
     delay(300);
   } else { //Not pressed

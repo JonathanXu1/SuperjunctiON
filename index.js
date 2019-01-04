@@ -1,7 +1,27 @@
 var app = require('express')();
 var http = require('http').Server(app);
+var http1 = require('http');
 var io = require('socket.io')(http);
+var url = require("url");
 var data = { output1: true, output2: true, mode: 'auto' };
+
+var proxy = url.parse(process.env.QUOTAGUARDSTATIC_URL);
+var target  = url.parse("https://superjunction.herokuapp.com/");
+
+var options = {
+  hostname: proxy.hostname,
+  port: proxy.port || 5000,
+  path: target.href,
+  headers: {
+    "Proxy-Authorization": "Basic " + (new Buffer(proxy.auth).toString("base64")),
+    "Host" : target.hostname
+  }
+};
+
+http1.get(options, function(res) {
+  res.pipe(process.stdout);
+  return console.log("status code", res.statusCode);
+});
 
 app.get('/', function(req, res) {
   res.sendFile(__dirname + '/index.html');
