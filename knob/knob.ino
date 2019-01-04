@@ -1,3 +1,8 @@
+/*Be sure to install these libraries:
+ * https://github.com/robojay/Socket.io-v1.x-Library
+ * https://github.com/Infineon/TLV493D-A1B6-3DMagnetic-Sensor
+*/
+
 #include <SocketIOClient.h>
 #include <SPI.h>
 #include <Tlv493d.h>
@@ -19,10 +24,10 @@ String powerMode = "auto";
 boolean skip = false;
 
 // Network login
-const char* ssid = "newhome";
-const char* password = "maolan123";
-String host = "192.168.0.17";
-int port = 3000;
+const char* ssid = //"ssid";
+const char* password = //"password";
+String host = //"host ip";
+int port = //port#;
 
 SocketIOClient socket;
 
@@ -124,13 +129,14 @@ void loop() {
     else powerMode = "battery";
   }
   if (powerMode.equals("battery")){
-    digitalWrite(inverterRelay, LOW);
-    delay(100);
     digitalWrite(sourceRelay, LOW);
+    delay(100);
+    digitalWrite(inverterRelay, LOW);
     digitalWrite(outletLed, LOW);
   } else if (powerMode.equals("outlet")){
-    digitalWrite(sourceRelay, HIGH);
     digitalWrite(inverterRelay, HIGH);
+    delay(100);
+    digitalWrite(sourceRelay, HIGH);
     digitalWrite(outletLed, HIGH);
   }  
 }
