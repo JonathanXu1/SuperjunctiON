@@ -1,9 +1,7 @@
 var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
-var output1 = {state:true};
-var output2 = {state:true};
-var mode = {state:'auto'};
+var data = { output1: true, output2: true, mode: 'auto' };
 
 app.get('/', function(req, res) {
   res.sendFile(__dirname + '/index.html');
@@ -15,20 +13,17 @@ io.on('connection', function(socket) {
   socket.on('disconnect', function(){
     console.log('User disconnected: ' + socket.id);
   });
-  socket.on('output1', function(object) {
-    console.log("Output1: " + object.state);
-    io.sockets.emit('output1', object);
+  socket.on('updateData', function(object){
+    data = object;
+    console.log("Update: ");
+    console.log(data);
+    io.sockets.emit('updateData', data);
   });
-  socket.on('output2', function(object) {
-    console.log("Output2: " + object.state);
-    io.sockets.emit('output2', object);
-  });
-  socket.on('mode', function(object) {
-    console.log("Mode: " + object.state);
-    console.log(object);
+  socket.on("getData", function(){
+    io.sockets.emit('updateData', data);
   });
 });
 
-http.listen(process.env.PORT || 3000, function() {
-  console.log('listening on *:3000');
+http.listen(process.env.PORT, function() {
+  console.log('listening on *:' + process.env.PORT);
 });

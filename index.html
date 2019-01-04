@@ -14,7 +14,7 @@
 
     <div class="row">
       <div class="switch col s4">
-        <h4> Outlet1 </h4>
+        <h4> Socket 1 </h4>
         <label>
           Off
           <input type="checkbox" id="o1">
@@ -23,7 +23,7 @@
         </label>
       </div>
       <div class="switch col s4">
-        <h4> Outlet2 </h4>
+        <h4> Socket 2 </h4>
         <label>
           Off
           <input type="checkbox" id="o2">
@@ -33,12 +33,26 @@
       </div>
       <div class="switch col s4">
         <h4> Mode </h4>
-        <label>
-          Off
-          <input type="checkbox" id="mode">
-          <span class="lever"></span>
-          On
-        </label>
+        <form action="#">
+          <p>
+            <label>
+              <input name="group1" type="radio" id="auto" class="mode" />
+              <span>Automatic</span>
+            </label>
+          </p>
+          <p>
+            <label>
+              <input name="group1" type="radio" id="battery" class="mode" />
+              <span>Battery</span>
+            </label>
+          </p>
+          <p>
+            <label>
+              <input name="group1" type="radio" id="outlet" class="mode" />
+              <span>Outlet</span>
+            </label>
+          </p>
+        </form>
       </div>
     </div>
 
@@ -50,34 +64,30 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script>
        var socket = io();
+       var data = {};
+       socket.emit('getData');
+
        $('#o1').on('click', function() {
-         if  (this.checked) socket.emit('output1', {state:true});
-         else socket.emit('output1', {state:false});
+         data.output1 = !data.output1;
+         socket.emit('updateData', data);
        });
        $('#o2').on('click', function() {
-         if  (this.checked) socket.emit('output2', {state:true});
-         else socket.emit('output2', {state:false});
+         data.output2 = !data.output2;
+         socket.emit('updateData', data);
        });
-       $('#mode').on('click', function() {
-         socket.emit('mode', {state:true});
-         if  (this.checked) socket.emit('mode', {state:true});
-         else socket.emit('mode', {state:false});
+       $('.mode').on('click', function() {
+         data.mode = this.id;
+         socket.emit('updateData', data);
        });
-       socket.on('output1', function(object) {
-         console.log("Output1: " + object.state);
-         if  (object.state) $('#o1').prop('checked', true);
-         else  $('#o1').prop('checked', false);
+
+       socket.on('updateData',function(object){
+         data = object;
+         console.log("Update: ", data);
+         $('#o1').prop('checked', data.output1);
+         $('#o2').prop('checked', data.output2);
+         $("#" + data.mode).prop('checked', true);
        });
-       socket.on('output2', function(object) {
-         console.log("Output2: " + object.state);
-         if  (object.state) $('#o2').prop('checked', true);
-         else  $('#o2').prop('checked', false);
-       });
-       socket.on('mode', function(object) {
-         console.log("Mode: " + object.state);
-         if  (object.state) $('#mode').prop('checked', true);
-         else  $('#mode').prop('checked', false);
-       });
+
     </script>
   </body>
 </html>

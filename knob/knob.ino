@@ -7,12 +7,15 @@
 int output1 = D5;
 int output2 = D6;
 int sourceRelay = D7; //High for outlet, low for battery
+int inverterRelay = D8; //Low for connected to battery
 int outletSensor = A0;
+int outletLed = D4;
 
 // Switch statuses
+
 boolean s1 = false; //False for normally open
 boolean s2 = false;
-int powerMode = 1; //1 for auto, 2 for battery, 3 for outlet
+String powerMode = "auto";
 boolean skip = false;
 
 // Network login
@@ -26,14 +29,15 @@ SocketIOClient socket;
 // Tlv493d Opject
 Tlv493d Tlv493dMagnetic3DSensor = Tlv493d();
 
-void light(String state) {
-  Serial.println("[light] " + state);
-  if (state == "\"state\":true") {
-    Serial.println("[light] ON");
-  }
-  else {
-    Serial.println("[light] off");
-  }
+void setData(String data) {
+  Serial.println("Data " + data);
+  data = data.substring(11);
+  s1 = data.substring(0, 4).equals("true");
+  data = data.substring(11);
+  s2 = data.substring(0, 4).equals("true");
+  data = data.substring(9);
+  powerMode = data.substring(0, data.indexOf("'"));
+  Serial.println("Update: " + s1 + " " + s2 + " " + powerMode);
 }
 
 void setup() {
@@ -50,13 +54,15 @@ void setup() {
   pinMode(output1, OUTPUT);
   pinMode(output2, OUTPUT);
   pinMode(sourceRelay, OUTPUT);
+  pinMode(inverterRelay, OUTPUT);
   pinMode(outletSensor, INPUT);
+  pinMode(outletLed, OUTPUT);
   
   digitalWrite(output1, LOW);
   digitalWrite(output2, LOW);
-  digitalWrite(sourceRelay, HIGH); 
-
-  Serial.println("cust2");
+  digitalWrite(sourceRelay, HIGH);
+  digitalWrite(inverterRelay, HIGH);
+  digitalWrite(outletLed, HIGH);
 
   //Set up wifi
   WiFi.begin(ssid, password);
@@ -70,7 +76,7 @@ void setup() {
     Serial.println("Connecton failed");
   }
   Serial.println("wifi connected");
-  socket.on("light", light);
+  socket.on("updateData", setData);
   socket.connect(host, port);
   Serial.println("server connected");
 }
@@ -90,27 +96,21 @@ void loop() {
       Serial.println(" socket2");
       s2 = !s2;
       digitalWrite(output2, s2);
-      if(!s2) socket.emit("output2", "{\"state\":true}");
-      else socket.emit("output2", "{\"state\":false}");
     } else if(azimuth <40){ //Socket1
       Serial.println(" socket1");
       s1 = !s1;
       digitalWrite(output1, s1);
-      if(!s1) socket.emit("output1", "{\"state\":true}");
-      else socket.emit("output1", "{\"state\":false}");
     } else if(azimuth < 60){ //battery
       Serial.println(" battery");
-      powerMode = 2;
-      socket.emit("mode", "{\"state\":'battery'}");
+      powerMode = "battery";
     } else if(azimuth < 80){ //Auto
       Serial.println(" auto");
-      powerMode = 1;
-      socket.emit("mode", "{\"state\":'auto'}");
+      powerMode = "auto";
     } else { //Outlet
       Serial.println(" outlet");
-      powerMode = 3;
-      socket.emit("mode", "{\"state\":'outlet'}");
+      powerMode = "outlet";
     }
+    socket.emit("updateData", "{output1: "+ !s1 +", output2: "+ !s2 +", mode: "+ powerMode +"}");
     skip = true;
     delay(300);
   } else { //Not pressed
@@ -118,12 +118,19 @@ void loop() {
     Serial.println("Not pressed");
   }
 
-  if (powerMode == 1){
+  if (powerMode.equals("auto")){
     int voltage = analogRead(outletSensor);
-    digitalWrite(sourceRelay, voltage > 1000);
-  } else if (powerMode == 2){
+    if (voltage > 1000) powerMode = "outlet";
+    else powerMode = "battery";
+  }
+  if (powerMode.equals("battery")){
+    digitalWrite(inverterRelay, LOW);
+    delay(100);
     digitalWrite(sourceRelay, LOW);
-  } else if (powerMode == 3){
+    digitalWrite(outletLed, LOW);
+  } else if (powerMode.equals("outlet")){
     digitalWrite(sourceRelay, HIGH);
+    digitalWrite(inverterRelay, HIGH);
+    digitalWrite(outletLed, HIGH);
   }  
 }
