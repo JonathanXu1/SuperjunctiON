@@ -21,7 +21,7 @@ int outletLed = D4;
 // Networking variables
 const char* ssid = "newhome";
 const char* password = "maolan123";
-String host = "192.168.137.1";
+String host = "192.168.0.20";
 int port = 5000;
 DynamicJsonBuffer jsonBuffer(JSON_OBJECT_SIZE(3));
 String JSON;
@@ -97,7 +97,7 @@ void setup() {
 
 void loop() {
   socket.monitor();
-  delay(Tlv493dMagnetic3DSensor.getMeasurementDelay() + 10);
+  delay(Tlv493dMagnetic3DSensor.getMeasurementDelay();
   Tlv493dMagnetic3DSensor.updateData();
 
   double mag = Tlv493dMagnetic3DSensor.getAmount();
@@ -133,21 +133,18 @@ void loop() {
     skip = false;
     Serial.println("Not pressed");
   }
-
-  String modeStr((char*)data["mode"]);
   
-  if (modeStr == "auto"){
+  if (data["mode"] == "auto"){
     int voltage = analogRead(outletSensor);
     if (voltage > 1000) data["mode"] = "outlet";
     else data["mode"] = "battery";
-    String modeStr((char*)data["mode"]);
   }
-  if (modeStr == "battery"){
+  if (data["mode"] == "battery"){
     digitalWrite(sourceRelay, LOW);
     delay(100);
     digitalWrite(inverterRelay, LOW);
     digitalWrite(outletLed, LOW);
-  } else if (modeStr == "outlet"){
+  } else if (data["mode"] == "outlet"){
     digitalWrite(inverterRelay, HIGH);
     delay(100);
     digitalWrite(sourceRelay, HIGH);
