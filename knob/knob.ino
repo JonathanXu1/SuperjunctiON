@@ -34,21 +34,11 @@ Tlv493d Tlv493dMagnetic3DSensor = Tlv493d();
 boolean skip = false;
 JsonObject& data = jsonBuffer.createObject();
 
-void setData(String data) {
-  Serial.println("Data " + data);
-  /*
-  data = data.substring(11);
-  s1 = data.substring(0, 4).equals("true");
-  if (s1) s1S = "true";
-  else s1S = "false";
-  data = data.substring(11);
-  s2 = data.substring(0, 4).equals("true");
-  if (s2) s2S = "true";
-  else s2S = "false";
-  data = data.substring(9);
-  powerMode = data.substring(0, data.indexOf("'"));
-  Serial.println("Update: " + s1S + " " + s2S + " " + powerMode);
-  */
+void setData(String incoming) {
+  Serial.println("Data " + incoming);
+  data = jsonBuffer.parseObject(incoming);
+  digitalWrite(output1, !data["output1"]);
+  digitalWrite(output2, !data["output2"]);
 }
 
 void setup() {
