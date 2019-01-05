@@ -21,7 +21,7 @@ int outletLed = D4;
 // Networking variables
 const char* ssid = "newhome";
 const char* password = "maolan123";
-String host = "192.168.0.19";
+String host = "superjunction.herokuapp.com";
 int port = 5000;
 DynamicJsonBuffer jsonBuffer(JSON_OBJECT_SIZE(3));
 String JSON;
@@ -96,7 +96,6 @@ void setup() {
   if (!socket.connect(host, port)) {
     Serial.println("Not connected to host");
   }
-  
   if (socket.connected()) {
     Serial.println("Connected to host");
   }
@@ -118,11 +117,11 @@ void loop() {
   if(mag > 45 && !skip){ //Pressed
     Serial.print("Pressed: ");
      if(azimuth < 20){ //Socket2
-      Serial.println(" socket2");
+      Serial.println(" output2");
       data["output2"] = !data["output2"];
       digitalWrite(output2, !data["output2"]);
     } else if(azimuth <40){ //Socket1
-      Serial.println(" socket1");
+      Serial.println(" output1");
       data["output1"] = !data["output1"];
       digitalWrite(output1, !data["output1"]);
     } else if(azimuth < 60){ //battery
@@ -136,6 +135,8 @@ void loop() {
       data["mode"] = "outlet";
     }
     if(socket.connected()){
+      Serial.print("cust: ");
+      data.printTo(Serial);
       JSON = "";
       data.printTo(JSON);
       socket.emit("updateData", JSON);
