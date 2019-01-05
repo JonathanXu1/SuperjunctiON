@@ -106,7 +106,8 @@ void setup() {
 }
 
 void loop() {
-  socket.monitor();
+  boolean connectStatus = WiFi.status() == WL_CONNECTED && socket.connect(host, port);
+  if(connectStatus) socket.monitor();
   
   delay(Tlv493dMagnetic3DSensor.getMeasurementDelay());
   Tlv493dMagnetic3DSensor.updateData();
@@ -135,7 +136,7 @@ void loop() {
       Serial.println(" outlet");
       data["mode"] = "outlet";
     }
-    if(WiFi.status() == WL_CONNECTED && socket.connect(host, port)){
+    if(connectStatus){
       JSON = "";
       data.printTo(JSON);
       socket.emit("updateData", JSON);
