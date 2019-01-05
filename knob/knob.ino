@@ -37,12 +37,12 @@ JsonObject& data = jsonBuffer.createObject();
 void setData(String incoming) {
   Serial.println("Incoming: " + incoming);
   JsonObject& root = jsonBuffer.parseObject(incoming);
-  data["output1"] = root ["output1"];
-  data["output2"] = root ["output2"];
-  data["mode"] = root ["mode"];
-  digitalWrite(output1, !data["output1"]);
-  digitalWrite(output2, !data["output2"]);
-  Serial.println("Incoming data processed");
+//  data["output1"] = root ["output1"];
+//  data["output2"] = root ["output2"];
+//  data["mode"] = root ["mode"];
+//  digitalWrite(output1, !data["output1"]);
+//  digitalWrite(output2, !data["output2"]);
+//  Serial.println("Incoming data processed");
 }
 
 void setup() {
@@ -135,8 +135,6 @@ void loop() {
       data["mode"] = "outlet";
     }
     if(socket.connected()){
-      Serial.print("cust: ");
-      data.printTo(Serial);
       JSON = "";
       data.printTo(JSON);
       socket.emit("updateData", JSON);
