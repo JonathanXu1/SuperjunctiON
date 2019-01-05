@@ -4,6 +4,7 @@
  * https://github.com/bblanchon/ArduinoJson  <-- Select version 5
 */
 
+//Including libraries
 #include <SocketIOClient.h>
 #include <ArduinoJson.h>
 #include <SPI.h>
@@ -19,10 +20,10 @@ int outletSensor = A0;
 int outletLed = D4;
 
 // Networking variables
-const char* ssid = "newhome";
-const char* password = "maolan123";
-//superjunction.herokuapp.com
-String host = "192.168.0.19"; //Replace with your ip if on localhost
+const char* ssid = "SSID";
+const char* password = "password";
+boolean localMode = false; //Change to true if using the node server
+String host = "superjunction.herokuapp.com"; //Replace with your ip if on localhost
 int port = 5000;
 DynamicJsonBuffer jsonBuffer(JSON_OBJECT_SIZE(3));
 String JSON;
@@ -35,31 +36,31 @@ Tlv493d Tlv493dMagnetic3DSensor = Tlv493d();
 boolean skip = false;
 JsonObject& data = jsonBuffer.createObject();
 
+// Processes incoming data and applies it to the pin states
 void setData(String incoming) {
   JsonObject& root = jsonBuffer.parseObject("{"+incoming+"}");
-  Serial.print("root: ");
+  Serial.print("Incoming: ");
   root.printTo(Serial);
   data["output1"] = root["output1"];
   data["output2"] = root["output2"];
   data["mode"] = root["mode"];
   digitalWrite(output1, !data["output1"]);
   digitalWrite(output2, !data["output2"]);
-  Serial.println("Incoming data processed");
-  Serial.print("data: ");
-  data.printTo(Serial);
 }
 
 void setup() {
+  // Setting up serial
   Serial.begin(115200);
   while(!Serial);
 
+  // Initializing the magnet sensor
   Wire.setClock(100000);
   Wire.begin(D1, D2); /* join i2c bus with SDA=D1 and SCL=D2 of NodeMCU */
-   
   Tlv493dMagnetic3DSensor.begin();
   Tlv493dMagnetic3DSensor.setAccessMode(Tlv493dMagnetic3DSensor.MASTERCONTROLLEDMODE);
   Tlv493dMagnetic3DSensor.disableTemp();
 
+  // IO initializations
   pinMode(output1, OUTPUT);
   pinMode(output2, OUTPUT);
   pinMode(sourceRelay, OUTPUT);
@@ -77,7 +78,7 @@ void setup() {
   data["output2"] = true;
   data["mode"] = "auto";
 
-  //Set up wifi
+  // Set up wifi
   WiFi.begin(ssid, password);
 
   uint8_t i = 0;
@@ -95,12 +96,17 @@ void setup() {
     Serial.println(WiFi.localIP());
   }
 
+  // Set up socket
   socket.on("updateData", setData);
 
-  //Replace the line below if using localhost:
-  if (!socket.connect(host, port)) {
-  //if (!socket.connect(host)) {
-    Serial.println("Not connected to host");
+  if (localMode){
+    if (!socket.connect(host, port)) {
+      Serial.println("Not connected to host");
+    }
+  } else {
+    if (!socket.connect(host)) {
+      Serial.println("Not connected to host");
+    }
   }
   if (socket.connected()) {
     Serial.println("Connected to host");
@@ -112,7 +118,8 @@ void setup() {
 
 void loop() {
   socket.monitor();
-  
+
+  // Get magnet sensor readings for knob
   delay(Tlv493dMagnetic3DSensor.getMeasurementDelay());
   Tlv493dMagnetic3DSensor.updateData();
 
@@ -120,7 +127,8 @@ void loop() {
   double azimuth = (Tlv493dMagnetic3DSensor.getAzimuth() + 3.14)*15.9;
   double polar = Tlv493dMagnetic3DSensor.getPolar();
 
-  if(mag > 45 && !skip){ //Pressed
+  // If knob selected something
+  if(mag > 45 && !skip){
     Serial.print("Pressed: ");
      if(azimuth < 20){ //Socket2
       Serial.println(" output2");
@@ -140,7 +148,7 @@ void loop() {
       Serial.println(" outlet");
       data["mode"] = "outlet";
     }
-    if(socket.connected()){
+    if(socket.connected()){ // Run when connected to wifi and host
       JSON = "";
       data.printTo(JSON);
       socket.emit("updateData", JSON);
@@ -151,7 +159,8 @@ void loop() {
     skip = false;
     Serial.println("Not pressed");
   }
-  
+
+  // Controls the source and inverter relays based on power mode
   if (data["mode"] == "auto"){
     int voltage = analogRead(outletSensor);
     if (voltage > 1000) data["mode"] = "outlet";
