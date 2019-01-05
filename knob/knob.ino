@@ -26,6 +26,7 @@ int port = 5000;
 DynamicJsonBuffer jsonBuffer(JSON_OBJECT_SIZE(3));
 String JSON;
 SocketIOClient socket;
+boolean wifiConnected, hostConnected;
 
 // Tlv493d Opject
 Tlv493d Tlv493dMagnetic3DSensor = Tlv493d();
@@ -81,15 +82,23 @@ void setup() {
 
   //Set up wifi
   WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
+
+  uint8_t i = 0;
+  while (WiFi.status() != WL_CONNECTED && i++ < 20){
+    delay(1000);
     Serial.print(".");
   }
-
-  Serial.println("");
-  Serial.println("WiFi connected");  
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
+  if(i == 21){
+    Serial.println("");
+    Serial.println("WiFi failed to connect");
+    wifiConnected = false;
+  } else {
+    Serial.println("");
+    Serial.println("WiFi connected");  
+    Serial.println("IP address: ");
+    Serial.println(WiFi.localIP());
+    wifiConnected = true;
+  }
 
   socket.on("updateData", setData);
   socket.connect(host, port);  
@@ -97,7 +106,7 @@ void setup() {
 
 void loop() {
   socket.monitor();
-  delay(Tlv493dMagnetic3DSensor.getMeasurementDelay();
+  delay(Tlv493dMagnetic3DSensor.getMeasurementDelay());
   Tlv493dMagnetic3DSensor.updateData();
 
   double mag = Tlv493dMagnetic3DSensor.getAmount();
@@ -124,6 +133,7 @@ void loop() {
       Serial.println(" outlet");
       data["mode"] = "outlet";
     }
+    JSON = "";
     data.printTo(JSON);
     socket.emit("updateData", JSON);
     data.printTo(Serial);
