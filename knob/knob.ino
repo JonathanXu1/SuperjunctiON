@@ -36,7 +36,10 @@ JsonObject& data = jsonBuffer.createObject();
 
 void setData(String incoming) {
   Serial.println("Data " + incoming);
-  data = jsonBuffer.parseObject(incoming);
+  JsonObject& root = jsonBuffer.parseObject(incoming);
+  data["output1"] = root ["output1"];
+  data["output2"] = root ["output2"];
+  data["mode"] = root ["mode"];
   digitalWrite(output1, !data["output1"]);
   digitalWrite(output2, !data["output2"]);
 }
