@@ -21,7 +21,8 @@ int outletLed = D4;
 // Networking variables
 const char* ssid = "newhome";
 const char* password = "maolan123";
-String host = "superjunction.herokuapp.com";
+//superjunction.herokuapp.com
+String host = "192.168.0.19"; //Replace with your ip if on localhost
 int port = 5000;
 DynamicJsonBuffer jsonBuffer(JSON_OBJECT_SIZE(3));
 String JSON;
@@ -35,14 +36,17 @@ boolean skip = false;
 JsonObject& data = jsonBuffer.createObject();
 
 void setData(String incoming) {
-  Serial.println("Incoming: " + incoming);
-  JsonObject& root = jsonBuffer.parseObject(incoming);
-//  data["output1"] = root ["output1"];
-//  data["output2"] = root ["output2"];
-//  data["mode"] = root ["mode"];
-//  digitalWrite(output1, !data["output1"]);
-//  digitalWrite(output2, !data["output2"]);
-//  Serial.println("Incoming data processed");
+  JsonObject& root = jsonBuffer.parseObject("{"+incoming+"}");
+  Serial.print("root: ");
+  root.printTo(Serial);
+  data["output1"] = root["output1"];
+  data["output2"] = root["output2"];
+  data["mode"] = root["mode"];
+  digitalWrite(output1, !data["output1"]);
+  digitalWrite(output2, !data["output2"]);
+  Serial.println("Incoming data processed");
+  Serial.print("data: ");
+  data.printTo(Serial);
 }
 
 void setup() {
@@ -92,8 +96,10 @@ void setup() {
   }
 
   socket.on("updateData", setData);
-  
+
+  //Replace the line below if using localhost:
   if (!socket.connect(host, port)) {
+  //if (!socket.connect(host)) {
     Serial.println("Not connected to host");
   }
   if (socket.connected()) {
@@ -139,6 +145,7 @@ void loop() {
       data.printTo(JSON);
       socket.emit("updateData", JSON);
     }
+    delay(300);
     skip = true;
   } else { //Not pressed
     skip = false;
