@@ -21,7 +21,7 @@ int outletLed = D4;
 // Networking variables
 const char* ssid = "newhome";
 const char* password = "maolan123";
-String host = "192.168.0.20";
+String host = "192.168.0.19";
 int port = 5000;
 DynamicJsonBuffer jsonBuffer(JSON_OBJECT_SIZE(3));
 String JSON;
@@ -67,7 +67,7 @@ void setup() {
   digitalWrite(output2, LOW);
   digitalWrite(sourceRelay, HIGH);
   digitalWrite(inverterRelay, HIGH);
-  digitalWrite(outletLed, HIGH);\
+  digitalWrite(outletLed, HIGH);
 
   data["output1"] = true;
   data["output2"] = true;
@@ -106,8 +106,7 @@ void setup() {
 }
 
 void loop() {
-  boolean connectStatus = WiFi.status() == WL_CONNECTED && socket.connect(host, port);
-  if(connectStatus) socket.monitor();
+  socket.monitor();
   
   delay(Tlv493dMagnetic3DSensor.getMeasurementDelay());
   Tlv493dMagnetic3DSensor.updateData();
@@ -136,11 +135,10 @@ void loop() {
       Serial.println(" outlet");
       data["mode"] = "outlet";
     }
-    if(connectStatus){
+    if(socket.connected()){
       JSON = "";
       data.printTo(JSON);
       socket.emit("updateData", JSON);
-      delay(300);
     }
     skip = true;
   } else { //Not pressed
