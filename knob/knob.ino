@@ -22,7 +22,7 @@ int outletLed = D4;
 // Networking variables
 const char* ssid = "SSID";
 const char* password = "password";
-boolean localMode = false; //Change to true if using the node server
+const boolean localMode = false; //Change to true if using localhost
 String host = "superjunction.herokuapp.com"; //Replace with your ip if on localhost
 int port = 5000;
 DynamicJsonBuffer jsonBuffer(JSON_OBJECT_SIZE(3));
