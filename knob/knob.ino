@@ -177,16 +177,9 @@ void loop() {
   // Controls the source and inverter relays based on power mode
   if (data["mode"] == "auto"){
     int voltage = analogRead(outletSensor);
-    if (voltage > 1000){
-      outletMode();
-    };
-    else {
-      batteryMode();
-    }
+    if (voltage > 1000) outletMode();
+    else  batteryMode();
   }
-  if (data["mode"] == "battery"){
-    batteryMode();
-  } else if (data["mode"] == "outlet"){
-    outletMode();
-  }  
+  if (data["mode"] == "battery") batteryMode();
+  else if (data["mode"] == "outlet") outletMode();
 }
