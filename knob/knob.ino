@@ -163,8 +163,18 @@ void loop() {
   // Controls the source and inverter relays based on power mode
   if (data["mode"] == "auto"){
     int voltage = analogRead(outletSensor);
-    if (voltage > 1000) data["mode"] = "outlet";
-    else data["mode"] = "battery";
+    if (voltage > 1000){
+      digitalWrite(inverterRelay, HIGH);
+      delay(100);
+      digitalWrite(sourceRelay, HIGH);
+      digitalWrite(outletLed, HIGH);
+    };
+    else {
+      digitalWrite(sourceRelay, LOW);
+      delay(100);
+      digitalWrite(inverterRelay, LOW);
+      digitalWrite(outletLed, LOW);
+    }
   }
   if (data["mode"] == "battery"){
     digitalWrite(sourceRelay, LOW);
