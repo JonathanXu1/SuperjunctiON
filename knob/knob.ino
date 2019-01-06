@@ -48,6 +48,20 @@ void setData(String incoming) {
   digitalWrite(output2, !data["output2"]);
 }
 
+// Functions for switching between power modes
+void batteryMode(){
+  digitalWrite(sourceRelay, LOW);
+  delay(100);
+  digitalWrite(inverterRelay, LOW);
+  digitalWrite(outletLed, LOW);
+}
+void outletMode(){
+  digitalWrite(inverterRelay, HIGH);
+  delay(100);
+  digitalWrite(sourceRelay, HIGH);
+  digitalWrite(outletLed, HIGH);
+}
+
 void setup() {
   // Setting up serial
   Serial.begin(115200);
@@ -164,27 +178,15 @@ void loop() {
   if (data["mode"] == "auto"){
     int voltage = analogRead(outletSensor);
     if (voltage > 1000){
-      digitalWrite(inverterRelay, HIGH);
-      delay(100);
-      digitalWrite(sourceRelay, HIGH);
-      digitalWrite(outletLed, HIGH);
+      outletMode();
     };
     else {
-      digitalWrite(sourceRelay, LOW);
-      delay(100);
-      digitalWrite(inverterRelay, LOW);
-      digitalWrite(outletLed, LOW);
+      batteryMode();
     }
   }
   if (data["mode"] == "battery"){
-    digitalWrite(sourceRelay, LOW);
-    delay(100);
-    digitalWrite(inverterRelay, LOW);
-    digitalWrite(outletLed, LOW);
+    batteryMode();
   } else if (data["mode"] == "outlet"){
-    digitalWrite(inverterRelay, HIGH);
-    delay(100);
-    digitalWrite(sourceRelay, HIGH);
-    digitalWrite(outletLed, HIGH);
+    outletMode();
   }  
 }
