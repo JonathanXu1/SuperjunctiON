@@ -18,6 +18,8 @@ int sourceRelay = D7; //High for outlet, low for battery
 int inverterRelay = D8; //Low for connected to battery
 int outletSensor = A0;
 int outletLed = D4;
+int sda = D1; //I2C pins used for comm with magnet sensor
+int scl = D2;
 
 // Networking variables
 const char* ssid = "SSID";
@@ -69,7 +71,7 @@ void setup() {
 
   // Initializing the magnet sensor
   Wire.setClock(100000);
-  Wire.begin(D1, D2); /* join i2c bus with SDA=D1 and SCL=D2 of NodeMCU */
+  Wire.begin(sda, scl); //Join I2C bus with magnet sensor
   Tlv493dMagnetic3DSensor.begin();
   Tlv493dMagnetic3DSensor.setAccessMode(Tlv493dMagnetic3DSensor.MASTERCONTROLLEDMODE);
   Tlv493dMagnetic3DSensor.disableTemp();
