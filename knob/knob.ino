@@ -4,10 +4,10 @@
  * https://github.com/bblanchon/ArduinoJson  <-- Select version 5
 */
 
+
 //Including libraries
 #include <SocketIOClient.h>
 #include <ArduinoJson.h>
-#include <SPI.h>
 #include <Tlv493d.h>
 #include <Wire.h>
 
